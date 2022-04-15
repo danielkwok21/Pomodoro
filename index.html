@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>NutFlix</title>
-    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+    <title>Pomodoro</title>
+    <link rel="icon" type="image/x-icon" href="./icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@200;600&family=Roboto&display=swap"
@@ -15,7 +15,14 @@
 
 <body>
     <div id="container">
-        <h1 id="clock">15:50</h1>
+        <div style="display: flex;width:80%;justify-content: center; align-items: center; gap:10px">
+            <input dir="rtl" maxlength="2" id="hour-clock-input" class="clock-input" placeholder="00" />
+            <p id="clock">h</p>
+            <input dir="rtl" maxlength="2" id="minute-clock-input" class="clock-input" placeholder="00" />
+            <p id="clock">m</p>
+            <input dir="rtl" maxlength="2" id="second-clock-input" class="clock-input" placeholder="00" />
+            <p id="clock">s</p>
+        </div>
 
         <div>
             <button id="primary-button" class="button-primary">
@@ -29,28 +36,179 @@
     </div>
 
     <script>
+        const PRIMARY_BUTTON_TEXT = {
+            START: 'Start',
+            PAUSE: 'Pause',
+        }
+        let isRunning = false
+
+        const primaryButtonEl = document.getElementById("primary-button")
+        primaryButtonEl.onclick = start
+
+        const hourClockInputEl = document.getElementById("hour-clock-input")
+        const minuteClockInputEl = document.getElementById("minute-clock-input")
+        const secondClockInputEl = document.getElementById("second-clock-input")
+
+        init()
+        start()
+
+        function init() {
+            minuteClockInputEl.value = "1"
+            secondClockInputEl.value = "5"
+
+        }
+
+        function start() {
+            isRunning = true
+
+            primaryButtonEl.innerHTML = PRIMARY_BUTTON_TEXT.PAUSE
+
+            /*Clean up values*/
+            if (Number(hourClockInputEl.value) == 0) {
+                hourClockInputEl.value = "00"
+            }
+            if (Number(minuteClockInputEl.value) == 0) {
+                minuteClockInputEl.value = "00"
+            }
+            if (Number(secondClockInputEl.value) == 0) {
+                secondClockInputEl.value = "00"
+            }
+
+            /*Start countdown*/
+            const s_hour = Number(hourClockInputEl.value)
+            const s_minute = Number(minuteClockInputEl.value)
+            const s_second = Number(secondClockInputEl.value)
+            const s_totalSeconds = s_hour * 60 * 60 + s_minute * 60 + s_second
+
+            let c_hour = s_hour
+            let c_minute = s_minute
+            let c_second = s_second
+            let c_totalSeconds = s_totalSeconds
+
+            let timer = setInterval(() => {
+                c_totalSeconds -= 1
+
+                c_second = c_second -= 1
+                if (c_second < 0) {
+                    c_second = 59
+                    c_minute -= 1
+                }
+
+                if (c_minute < 0) {
+                    c_minute = 59
+                    c_hour -= 1
+                }
+
+                hourClockInputEl.value = c_hour.toString().padStart(2, 0)
+                minuteClockInputEl.value = c_minute.toString().padStart(2, 0)
+                secondClockInputEl.value = c_second.toString().padStart(2, 0)
+
+                if (c_hour === 0 && c_minute === 0 && c_second === 0) {
+                    end(timer, s_hour, s_minute, s_second)
+                }
+
+                let titleText = ``
+                if (c_second > 0) {
+                    titleText += `${c_second}s`
+                }
+                if (c_minute > 0) {
+                    titleText = `${c_minute}m ` + titleText
+                }
+                if (c_hour > 0) {
+                    titleText = `${c_hour}h ` + titleText
+                }
+                document.title = titleText
+
+
+            }, 1 * 10)
+        }
+
+        function end(timer, s_hour, s_minute, s_second) {
+            clearInterval(timer)
+            primaryButtonEl.innerHTML = PRIMARY_BUTTON_TEXT.START
+
+            hourClockInputEl.value =  s_hour.toString().padStart(2, 0)
+            minuteClockInputEl.value = s_minute.toString().padStart(2, 0)
+            secondClockInputEl.value =  s_second.toString().padStart(2, 0)
+
+            document.title = `Pomodoro`
+
+            launchNotification()
+        }
+
+
+        function launchNotification() {
+            // Let's check if the browser supports notifications
+            if (!("Notification" in window)) {
+                alert("This browser does not support desktop notification");
+            }
+
+            // Let's check whether notification permissions have already been granted
+            else if (Notification.permission === "granted") {
+                // If it's okay let's create a notification
+                getNotification()
+            }
+
+            // Otherwise, we need to ask the user for permission
+            else if (Notification.permission !== "denied") {
+                Notification.requestPermission().then(function (permission) {
+                    // If the user accepts, let's create a notification
+                    if (permission === "granted") {
+                        getNotification()
+                    }
+                });
+            }
+
+            function getNotification() {
+                var notification = new Notification("Congrats! End of pomodoro session.", {
+                    icon: "./icon.png"
+                })
+                return notification
+            }
+        }
 
     </script>
     <style>
         #container {
             width: 100%;
+            height: 95vh;
             display: flex;
             justify-content: center;
             align-items: center;
             flex-direction: column;
-            /* background-color: red; */
         }
 
         figcaption,
         h1,
+        p,
         a {
             font-family: 'Nunito', sans-serif;
             font-family: 'Roboto', sans-serif;
         }
 
+        .clock-input {
+            font-size: 6rem;
+            width: 120px;
+            border: none;
+            outline: none;
+        }
+
+        #text-clock-input {
+            font-size: 6rem;
+            width: 380px;
+            border: none;
+            outline: none;
+            text-align: center;
+        }
+
+        ::placeholder {
+            color: lightgrey;
+        }
+
         #clock {
-            font-size: 10rem;
+            font-size: 2rem;
             font-weight: 100;
+            color: lightgrey;
         }
 
         .button-primary {
@@ -63,6 +221,19 @@
             display: inline-block;
             font-size: 1rem;
             cursor: pointer;
+            width: 120px;
+        }
+
+        .button-primary-disabled {
+            background-color: lightgrey;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 1rem;
+            width: 100px;
         }
 
         .button-secondary {
@@ -74,6 +245,7 @@
             display: inline-block;
             font-size: 1rem;
             cursor: pointer;
+            width: 100px;
         }
 
         @media screen and (max-width: 500px) {
@@ -86,12 +258,12 @@
             }
 
             #primary-button {
-                width:100%;
+                width: 100%;
                 margin-bottom: 5px;
             }
 
             #secondary-button {
-                width:100%;
+                width: 100%;
 
             }
         }
