@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>NutFlix</title>
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@200;600&family=Roboto&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div id="container">
+        <h1 id="clock">15:50</h1>
+
+        <div>
+            <button id="primary-button" class="button-primary">
+                Start
+            </button>
+            <button id="secondary-button" class="button-secondary">
+                Reset
+            </button>
+
+        </div>
+    </div>
+
+    <script>
+
+    </script>
+    <style>
+        #container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            /* background-color: red; */
+        }
+
+        figcaption,
+        h1,
+        a {
+            font-family: 'Nunito', sans-serif;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        #clock {
+            font-size: 10rem;
+            font-weight: 100;
+        }
+
+        .button-primary {
+            background-color: rgb(18, 18, 18);
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .button-secondary {
+            border: none;
+            background-color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        @media screen and (max-width: 500px) {
+            #container {
+                height: 95vh;
+            }
+
+            #clock {
+                font-size: 20vw;
+            }
+
+            #primary-button {
+                width:100%;
+                margin-bottom: 5px;
+            }
+
+            #secondary-button {
+                width:100%;
+
+            }
+        }
+    </style>
+</body>
+
+</html>
