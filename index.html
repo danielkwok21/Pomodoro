@@ -24,11 +24,11 @@
             <p id="clock">s</p>
         </div>
 
-        <div>
+        <div style="margin-top:20px">
             <button id="primary-button" class="button-primary">
                 Start
             </button>
-            <button id="secondary-button" class="button-secondary">
+            <button id="reset-button" class="button-secondary">
                 Reset
             </button>
 
@@ -39,29 +39,58 @@
         const PRIMARY_BUTTON_TEXT = {
             START: 'Start',
             PAUSE: 'Pause',
+            RESET: 'Reset',
+            OK: 'Ok',
         }
         let isRunning = false
 
         const primaryButtonEl = document.getElementById("primary-button")
         primaryButtonEl.onclick = start
 
+        const resetButtonEl = document.getElementById("reset-button")
+        resetButtonEl.onclick = reset
+
         const hourClockInputEl = document.getElementById("hour-clock-input")
         const minuteClockInputEl = document.getElementById("minute-clock-input")
         const secondClockInputEl = document.getElementById("second-clock-input")
 
+        /*
+        Global vars
+        */
+        let timer = null
+        let s_hour, s_minute, s_second, s_totalSeconds
+        let c_hour, c_minute, c_second, c_totalSeconds
         init()
-        start()
+        // start()
 
         function init() {
-            minuteClockInputEl.value = "1"
-            secondClockInputEl.value = "5"
+            const urlParams = new URLSearchParams(window.location.search);
+            const time = urlParams.get('t');
 
+            const hourstring = time?.match(/(\d)*[h]/) && time.match(/(\d)*[h]/)[0]
+            const minutestring = time?.match(/(\d)*[m]/) && time.match(/(\d)*[m]/)[0]
+            const secondstring = time?.match(/(\d)*[s]/) && time.match(/(\d)*[s]/)[0]
+
+            let hour = hourstring ? Number(hourstring.replace('h', '')) : 0
+            let minute = minutestring ? Number(minutestring.replace('m', '')) : 30
+            let second = secondstring ? Number(secondstring.replace('s', '')) : 0
+
+            if (second > 59) {
+                minute += Number(Math.floor(second / 60))
+                second = second % 60
+            }
+            if (minute > 59) {
+                hour += Number(Math.floor(minute / 60))
+                minute = minute % 60
+            }
+
+            hourClockInputEl.value = hour.toString().padStart(2, 0)
+            minuteClockInputEl.value = minute.toString().padStart(2, 0)
+            secondClockInputEl.value = second.toString().padStart(2, 0)
         }
 
         function start() {
-            isRunning = true
-
-            primaryButtonEl.innerHTML = PRIMARY_BUTTON_TEXT.PAUSE
+            console.log('start')
 
             /*Clean up values*/
             if (Number(hourClockInputEl.value) == 0) {
@@ -75,17 +104,29 @@
             }
 
             /*Start countdown*/
-            const s_hour = Number(hourClockInputEl.value)
-            const s_minute = Number(minuteClockInputEl.value)
-            const s_second = Number(secondClockInputEl.value)
-            const s_totalSeconds = s_hour * 60 * 60 + s_minute * 60 + s_second
+            s_hour = Number(hourClockInputEl.value)
+            s_minute = Number(minuteClockInputEl.value)
+            s_second = Number(secondClockInputEl.value)
+            s_totalSeconds = s_hour * 60 * 60 + s_minute * 60 + s_second
 
-            let c_hour = s_hour
-            let c_minute = s_minute
-            let c_second = s_second
-            let c_totalSeconds = s_totalSeconds
+            hourClockInputEl.disabled = true
+            minuteClockInputEl.disabled = true
+            secondClockInputEl.disabled = true
 
-            let timer = setInterval(() => {
+            c_hour = s_hour
+            c_minute = s_minute
+            c_second = s_second
+            c_totalSeconds = s_totalSeconds
+
+            runTimer(s_hour, s_minute, s_second)
+        }
+
+        function runTimer(s_hour, s_minute, s_second) {
+            isRunning = true
+            primaryButtonEl.innerHTML = PRIMARY_BUTTON_TEXT.PAUSE
+            primaryButtonEl.onclick = pause
+
+            timer = setInterval(() => {
                 c_totalSeconds -= 1
 
                 c_second = c_second -= 1
@@ -103,39 +144,82 @@
                 minuteClockInputEl.value = c_minute.toString().padStart(2, 0)
                 secondClockInputEl.value = c_second.toString().padStart(2, 0)
 
-                if (c_hour === 0 && c_minute === 0 && c_second === 0) {
+                if (c_hour <= 0 && c_minute <= 0 && c_second <= 0) {
                     end(timer, s_hour, s_minute, s_second)
                 }
 
-                let titleText = ``
-                if (c_second > 0) {
-                    titleText += `${c_second}s`
-                }
-                if (c_minute > 0) {
-                    titleText = `${c_minute}m ` + titleText
-                }
-                if (c_hour > 0) {
-                    titleText = `${c_hour}h ` + titleText
-                }
-                document.title = titleText
-
+                document.title = getFormattedDuration(c_hour, c_minute, c_second)
 
             }, 1 * 10)
         }
 
-        function end(timer, s_hour, s_minute, s_second) {
-            clearInterval(timer)
-            primaryButtonEl.innerHTML = PRIMARY_BUTTON_TEXT.START
+        function getFormattedDuration(c_hour, c_minute, c_second) {
 
-            hourClockInputEl.value =  s_hour.toString().padStart(2, 0)
-            minuteClockInputEl.value = s_minute.toString().padStart(2, 0)
-            secondClockInputEl.value =  s_second.toString().padStart(2, 0)
+            let titleText = ``
+            if (c_second > 0) {
+                titleText += `${c_second}s`
+            }
+            if (c_minute > 0) {
+                titleText = `${c_minute}m ` + titleText
+            }
+            if (c_hour > 0) {
+                titleText = `${c_hour}h ` + titleText
+            }
+            return titleText
+        }
+
+        function pause() {
+            console.log('pause')
+            clearInterval(timer)
+            isRunning = false
+            primaryButtonEl.innerHTML = PRIMARY_BUTTON_TEXT.START
+            primaryButtonEl.onclick = runTimer
+
+        }
+
+        let audioTimer
+        var audio = new Audio('./sound1.wav');
+        async function end() {
+            console.log('end')
+            
+            resetButtonEl.style.display = 'none'
+
+            primaryButtonEl.innerHTML = PRIMARY_BUTTON_TEXT.RESET
+            primaryButtonEl.style.width = '220px'
+            primaryButtonEl.onclick = reset
+
+            clearInterval(timer)
 
             document.title = `Pomodoro`
 
             launchNotification()
+
+            while (isRunning) {
+                await audio.play();
+            }
         }
 
+        function reset() {
+            isRunning = false
+
+            clearInterval(audioTimer)
+
+            clearInterval(timer)
+
+            resetButtonEl.style.display = 'block'
+            primaryButtonEl.innerHTML = PRIMARY_BUTTON_TEXT.START
+            primaryButtonEl.onclick = start
+
+            hourClockInputEl.value = s_hour.toString().padStart(2, 0)
+            minuteClockInputEl.value = s_minute.toString().padStart(2, 0)
+            secondClockInputEl.value = s_second.toString().padStart(2, 0)
+
+            hourClockInputEl.disabled = false
+            minuteClockInputEl.disabled = false
+            secondClockInputEl.disabled = false
+
+            document.title = getFormattedDuration(s_hour, s_minute, s_second)
+        }
 
         function launchNotification() {
             // Let's check if the browser supports notifications
@@ -193,12 +277,8 @@
             outline: none;
         }
 
-        #text-clock-input {
-            font-size: 6rem;
-            width: 380px;
-            border: none;
-            outline: none;
-            text-align: center;
+        .clock-input:disabled {
+            color:black
         }
 
         ::placeholder {
@@ -221,19 +301,11 @@
             display: inline-block;
             font-size: 1rem;
             cursor: pointer;
-            width: 120px;
+                width: 100%;
         }
 
-        .button-primary-disabled {
-            background-color: lightgrey;
-            border: none;
-            color: white;
-            padding: 15px 32px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 1rem;
-            width: 100px;
+        .button-primary:hover {
+            background-color: rgb(47, 47, 47);
         }
 
         .button-secondary {
@@ -245,7 +317,7 @@
             display: inline-block;
             font-size: 1rem;
             cursor: pointer;
-            width: 100px;
+                width: 100%;
         }
 
         @media screen and (max-width: 500px) {
@@ -253,18 +325,9 @@
                 height: 95vh;
             }
 
-            #clock {
-                font-size: 20vw;
-            }
-
-            #primary-button {
-                width: 100%;
-                margin-bottom: 5px;
-            }
-
-            #secondary-button {
-                width: 100%;
-
+            .clock-input {
+                font-size: 10vw;
+                width: 20%;
             }
         }
     </style>
