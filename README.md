@@ -7,5 +7,6 @@ Simple replacement of Google's timer application.
 I am a big fan of Google's timer app. It's simple, straightforward, no-fuss. But somehow it's not acccesible from my laptop since a couple weeks back, so I decided to built one.
 
 ## Deployment
-Git + Nginx. <br />
-Push locally, pull remotely.
+Deployment is done via github action.
+
+Will deploy on local push to `master`.
