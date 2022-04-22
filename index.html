@@ -181,7 +181,7 @@
         var audio = new Audio('./assets/sound1.wav');
         async function end() {
             console.log('end')
-            
+
             resetButtonEl.style.display = 'none'
 
             primaryButtonEl.innerHTML = PRIMARY_BUTTON_TEXT.RESET
@@ -195,6 +195,7 @@
             launchNotification()
 
             while (isRunning) {
+                audio.volume = 0.02
                 await audio.play();
             }
         }
@@ -278,7 +279,7 @@
         }
 
         .clock-input:disabled {
-            color:black
+            color: black
         }
 
         ::placeholder {
@@ -301,7 +302,7 @@
             display: inline-block;
             font-size: 1rem;
             cursor: pointer;
-                width: 100%;
+            width: 100%;
         }
 
         .button-primary:hover {
@@ -317,7 +318,7 @@
             display: inline-block;
             font-size: 1rem;
             cursor: pointer;
-                width: 100%;
+            width: 100%;
         }
 
         @media screen and (max-width: 500px) {
