@@ -87,6 +87,10 @@
             hourClockInputEl.value = hour.toString().padStart(2, 0)
             minuteClockInputEl.value = minute.toString().padStart(2, 0)
             secondClockInputEl.value = second.toString().padStart(2, 0)
+
+            window.onbeforeunload = function (e) {
+                return ''
+            };
         }
 
         function start() {
